@@ -32,33 +32,14 @@ RUN mkdir -p /opt/conda/pkgs && \
     conda config --set channel_priority strict
 
 # Create and activate conda environment
-RUN conda create -n comfyui python=3.12 pip -y && \
-    echo "conda activate comfyui" >> ~/.bashrc
+RUN conda create -n comfy python=3.12 pip -y && \
+    conda run -n comfy pip install --no-cache-dir torch==$PYTORCH torchvision torchaudio --index-url https://download.pytorch.org/whl/cu$CUDA
 
-SHELL ["/bin/bash", "--login", "-c"]
-
-# Install nginx
-RUN apt-get update && \
-    apt-get install -y nginx
-
-# Copy the 'default' configuration file to the appropriate location
-COPY default /etc/nginx/sites-available/default
-
-# Install pytorch
-ARG PYTORCH="2.6.0"
-ARG CUDA="126"
-RUN conda install -n comfyui -y pytorch=$PYTORCH torchvision torchaudio pytorch-cuda=$CUDA -c pytorch -c nvidia
-
-COPY --chmod=755 start-ssh-only.sh /start.sh
-COPY --chmod=755 start-original.sh /start-original.sh
-COPY --chmod=755 comfyui-on-workspace.sh /comfyui-on-workspace.sh
-COPY --chmod=755 check_files.sh /check_files.sh
-
-# Clone the git repo and install requirements in the same RUN command to ensure they are in the same layer
-RUN conda run -n comfyui pip install comfy-cli
+# Install ComfyUI dependencies
+RUN conda run -n comfy pip install --no-cache-dir comfy-cli
 
 # ComfyUI-Custom-Scripts
-RUN conda run -n comfyui comfy node registry-install comfyui-custom-scripts
+RUN conda run -n comfy comfy node registry-install comfyui-custom-scripts
 
 # Create pysssss-workflows folder
 RUN mkdir pysssss-workflows
@@ -89,14 +70,14 @@ RUN cd /ComfyUI/custom_nodes && \
 COPY --chmod=644 defaultGraph.json /defaultGraph.json
 COPY --chmod=755 replaceDefaultGraph.py /replaceDefaultGraph.py
 # Run the Python script
-RUN conda run -n comfyui python /replaceDefaultGraph.py
+RUN conda run -n comfy python /replaceDefaultGraph.py
 
 # Add some additional custom nodes
 # LDSR Upscale
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/flowtyone/ComfyUI-Flowty-LDSR.git && \
     cd ComfyUI-Flowty-LDSR && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # Add download scripts for additional models
 COPY --chmod=755 download_Controlnet.sh /download_Controlnet.sh
@@ -114,13 +95,13 @@ COPY --chmod=755 download_Files.sh /download_Files.sh
 COPY --chmod=755 disable_mixlab.sh /disable_mixlab.sh
 
 # SUPIR Upscale (https://registry.comfy.org/nodes/comfyui-supir)
-RUN conda run -n comfyui comfy node registry-install comfyui-supir
+RUN conda run -n comfy comfy node registry-install comfyui-supir
 
 # KJNodes (https://registry.comfy.org/nodes/comfyui-kjnodes)
-RUN conda run -n comfyui comfy node registry-install comfyui-kjnodes
+RUN conda run -n comfy comfy node registry-install comfyui-kjnodes
 
 # rgthree (https://registry.comfy.org/nodes/rgthree-comfy)
-RUN conda run -n comfyui comfy node registry-install rgthree-comfy
+RUN conda run -n comfy comfy node registry-install rgthree-comfy
 
 # JPS-Nodes
 RUN cd /ComfyUI/custom_nodes && \
@@ -135,20 +116,20 @@ RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Jordach/comfy-plasma.git
 
 # ComfyUI-VideoHelperSuite (https://registry.comfy.org/nodes/comfyui-videohelpersuite)
-RUN conda run -n comfyui comfy node registry-install comfyui-videohelpersuite
+RUN conda run -n comfy comfy node registry-install comfyui-videohelpersuite
 
 # ComfyUI-AdvancedLivePortrait (https://registry.comfy.org/nodes/comfyui-advancedliveportrait)
-RUN conda run -n comfyui comfy node registry-install comfyui-advancedliveportrait
+RUN conda run -n comfy comfy node registry-install comfyui-advancedliveportrait
 
 # ComfyUI-Impact-Subpack (https://registry.comfy.org/nodes/comfyui-impact-subpack)
-RUN conda run -n comfyui comfy node registry-install comfyui-impact-subpack
+RUN conda run -n comfy comfy node registry-install comfyui-impact-subpack
 
 # ComfyUI-Impact-controlnet_aux
-RUN conda run -n comfyui comfy node registry-install comfyui-controlnet-aux
+RUN conda run -n comfy comfy node registry-install comfyui-controlnet-aux
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
     cd comfyui_controlnet_aux && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 # ComfyUI-UltimateSDUpscale (https://registry.comfy.org/nodes/comfyui-ultimatesdupscale)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale --recursive
@@ -157,20 +138,20 @@ RUN cd /ComfyUI/custom_nodes && \
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/yolain/ComfyUI-Easy-Use.git && \
     cd ComfyUI-Easy-Use && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # ComfyUI-Florence2 (https://registry.comfy.org/nodes/comfyui-florence2)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/kijai/ComfyUI-Florence2.git && \
     cd ComfyUI-Florence2 && \
-    conda run -n comfyui pip install -r requirements.txt && \
+    conda run -n comfy pip install -r requirements.txt && \
     mkdir /ComfyUI/models/LLM
 
 # was-node-suite-comfyui (https://registry.comfy.org/nodes/was-node-suite-comfyui)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/WASasquatch/was-node-suite-comfyui.git && \
     cd was-node-suite-comfyui && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # ComfyUI-Logic (https://registry.comfy.org/nodes/comfyui-logic)
 RUN cd /ComfyUI/custom_nodes && \
@@ -180,7 +161,7 @@ RUN cd /ComfyUI/custom_nodes && \
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/cubiq/ComfyUI_essentials.git && \
     cd ComfyUI_essentials && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # cg-image-picker (https://registry.comfy.org/nodes/cg-image-picker)
 RUN cd /ComfyUI/custom_nodes && \
@@ -190,19 +171,19 @@ RUN cd /ComfyUI/custom_nodes && \
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/chflame163/ComfyUI_LayerStyle.git && \
     cd ComfyUI_LayerStyle && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # comfyui-mixlab-nodes (https://registry.comfy.org/nodes/comfyui-mixlab-nodes)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/shadowcz007/comfyui-mixlab-nodes.git && \
     cd comfyui-mixlab-nodes && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # comfyui-reactor-node (https://registry.comfy.org/nodes/comfyui-reactor-node)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Gourieff/comfyui-reactor-node.git && \
     cd comfyui-reactor-node && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # cg-use-everywhere (https://registry.comfy.org/nodes/cg-use-everywhere)
 RUN cd /ComfyUI/custom_nodes && \
@@ -212,9 +193,9 @@ RUN cd /ComfyUI/custom_nodes && \
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/kijai/ComfyUI-CogVideoXWrapper.git && \
     cd ComfyUI-CogVideoXWrapper && \
-    conda run -n comfyui pip install -r requirements.txt
+    conda run -n comfy pip install -r requirements.txt
 
 # ComfyUI-FluxTrainer (https://registry.comfy.org/nodes/comfyui-fluxtrainer)
-RUN conda run -n comfyui comfy node registry-install comfyui-fluxtrainer
+RUN conda run -n comfy comfy node registry-install comfyui-fluxtrainer
 
 CMD [ "/start.sh" ]

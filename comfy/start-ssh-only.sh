@@ -34,7 +34,7 @@ bash /check_files.sh
 
 # Activate conda environment
 source /usr/local/miniconda3/etc/profile.d/conda.sh
-conda activate ComfyUI_env
+conda activate comfy
 
 # Check if user's script exists in /workspace
 if [ ! -f /workspace/start_user.sh ]; then
