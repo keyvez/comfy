@@ -57,6 +57,9 @@ COPY --chmod=755 check_files.sh /check_files.sh
 # Install ComfyCLI dependencies
 RUN pip install --no-cache-dir comfy-cli
 
+# Disable tracking
+ENV COMFY_ALLOW_TRACKING=false
+
 # Install ComfyUI
 RUN comfy --workspace=/workspace/comfy install
 
