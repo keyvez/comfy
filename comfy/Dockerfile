@@ -51,7 +51,7 @@ RUN pip install --no-cache-dir torch==$PYTORCH torchvision torchaudio --index-ur
 
 COPY --chmod=755 start-ssh-only.sh /start.sh
 COPY --chmod=755 start-original.sh /start-original.sh
-COPY --chmod=755 comfyui-on-workspace.sh /comfy-on-workspace.sh
+COPY --chmod=755 comfy-on-workspace.sh /comfy-on-workspace.sh
 COPY --chmod=755 check_files.sh /check_files.sh
 
 # Install ComfyCLI dependencies
