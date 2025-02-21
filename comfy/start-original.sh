@@ -11,7 +11,7 @@ bash /update_Workflows.sh
 bash /disable_mixlab.sh
 
 # Launch the UI
-comfy --workspace /workspace/comfy launch -- --listen *
+comfy --workspace /opt/comfy launch -- --listen *
 
 # Keep the container running indefinitely
 sleep infinity

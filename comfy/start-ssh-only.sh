@@ -13,9 +13,6 @@ then
     service ssh start
 fi
 
-# Move text-generation-webui's folder to $VOLUME so models and all config will persist
-/comfy-on-workspace.sh
-
 #!/bin/bash
 if [[ -z "${HF_TOKEN}" ]] || [[ "${HF_TOKEN}" == "enter_your_huggingface_token_here" ]]
 then
@@ -36,13 +33,13 @@ bash /check_files.sh
 source /usr/local/miniconda3/etc/profile.d/conda.sh
 conda activate comfy
 
-# Check if user's script exists in /workspace
-if [ ! -f /workspace/start_user.sh ]; then
-    # If not, copy the original script to /workspace
-    cp /start-original.sh /workspace/start_user.sh
+# Check if user's script exists in /opt
+if [ ! -f /opt/comfy/start_user.sh ]; then
+    # If not, copy the original script to /opt
+    cp /start-original.sh /opt/comfy/start_user.sh
 fi
 
 # Execute the user's script
-bash /workspace/start_user.sh
+bash /opt/comfy/start_user.sh
 
 sleep infinity

@@ -757,7 +757,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "To make your own Lora, you can use this: https://replicate.com/ostris/flux-dev-lora-trainer/train\nTo try your own LoRa, download the lora.safetensors file into /workspace/comfy/models/loras and select it in the node above. To test if the LoRa is working you can bybass the node or set the strength to 0 while keeping the noise_seed fixed.\n\nUPDATE: It is now also possible to train LoRas directly in this template, see the following tutorial: https://github.com/keyvez/comfy_with_Flux/blob/main/comfy-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md"
+        "To make your own Lora, you can use this: https://replicate.com/ostris/flux-dev-lora-trainer/train\nTo try your own LoRa, download the lora.safetensors file into /opt/comfy/models/loras and select it in the node above. To test if the LoRa is working you can bybass the node or set the strength to 0 while keeping the noise_seed fixed.\n\nUPDATE: It is now also possible to train LoRas directly in this template, see the following tutorial: https://github.com/keyvez/comfy_with_Flux/blob/main/comfy-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md"
       ],
       "color": "#432",
       "bgcolor": "#653"

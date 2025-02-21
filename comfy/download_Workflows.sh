@@ -4,7 +4,7 @@
 repo_url="https://raw.githubusercontent.com/keyvez/comfy_with_Flux/main/comfy/workflows"
 
 # The local directory to store the files
-local_dir="/workspace/comfy/pysssss-workflows"
+local_dir="/opt/comfy/pysssss-workflows"
 
 # List of file names
 file_list=(

@@ -4,7 +4,7 @@ import os
 import glob
 
 # Load the contents of defaultGraph.json
-with open('/defaultGraph.json', 'r', encoding='utf-8') as json_file:
+with open('defaultGraph.json', 'r', encoding='utf-8') as json_file:
     json_data = json.load(json_file)
 
 # Convert the JSON data to a string

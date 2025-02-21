@@ -6,6 +6,8 @@ ARG DOCKER_FROM=nvidia/cuda:$CUDA_VERSION-cudnn$CUDNN_VERSION-devel-ubuntu$UBUNT
 # Base NVidia CUDA Ubuntu image
 FROM $DOCKER_FROM AS base
 
+WORKDIR /opt
+
 # Install Python plus openssh, which is our minimum set of required packages.
 RUN apt-get update -y && \
     apt-get install -y wget bzip2 && \
@@ -51,62 +53,59 @@ RUN pip install --no-cache-dir torch==$PYTORCH torchvision torchaudio --index-ur
 
 COPY --chmod=755 start-ssh-only.sh /start.sh
 COPY --chmod=755 start-original.sh /start-original.sh
-COPY --chmod=755 comfy-on-workspace.sh /comfy-on-workspace.sh
 COPY --chmod=755 check_files.sh /check_files.sh
 
 # Install ComfyCLI dependencies
 RUN pip install --no-cache-dir comfy-cli
 
-# Disable tracking
-ENV COMFY_HOME=/workspace/comfy
-RUN comfy --skip-prompt tracking disable
+ENV COMFY_HOME=/opt/comfy
+ARG COMFY_VERSION="0.3.14"
+
+# Install ComfyUI
+RUN git clone --progress --depth 1 --branch v${COMFY_VERSION} https://github.com/comfyanonymous/ComfyUI.git comfy
+
+WORKDIR /opt/comfy
+
 RUN comfy --skip-prompt set-default ${COMFY_HOME}
+RUN comfy --skip-prompt tracking disable
 ENV MODEL_DIR=${COMFY_HOME}/models
 ENV OUTPUT_DIR=${COMFY_HOME}/output
 ENV INPUT_DIR=${COMFY_HOME}/input
-
-# Install ComfyUI
-RUN comfy --workspace ${COMFY_HOME} install
 
 # ComfyUI-Custom-Scripts
 RUN comfy node registry-install comfyui-custom-scripts
 
 # Create pysssss-workflows folder
 RUN mkdir pysssss-workflows
-RUN mkdir pysssss-workflows
 
-COPY --chmod=644 workflows/ /comfy/pysssss-workflows/
-COPY --chmod=644 comfy.settings.json /comfy/user/default/comfy.settings.json
-COPY --chmod=644 character_sheet_example.png /comfy/input/character_sheet_example.png
-COPY --chmod=644 example_photo.png /comfy/input/example_photo.png
-COPY --chmod=644 example_photo_small.png /comfy/input/example_photo_small.png
-COPY --chmod=644 example_pose.png /comfy/input/example_pose.png
-COPY --chmod=644 example2.png /comfy/input/example2.png
-
-WORKDIR /workspace
+COPY --chmod=644 workflows/ /opt/comfy/pysssss-workflows/
+COPY --chmod=644 comfy.settings.json /opt/comfy/user/default/comfy.settings.json
+COPY --chmod=644 character_sheet_example.png /opt/comfy/input/character_sheet_example.png
+COPY --chmod=644 example_photo.png /opt/comfy/input/example_photo.png
+COPY --chmod=644 example_photo_small.png /opt/comfy/input/example_photo_small.png
+COPY --chmod=644 example_pose.png /opt/comfy/input/example_pose.png
+COPY --chmod=644 example2.png /opt/comfy/input/example2.png
+COPY --chmod=644 flux_dev_example.png /opt/comfy/flux_dev_example.png
 
 EXPOSE 8188
 
-# Download and move flux_dev_example.png
-RUN wget "https://github.com/comfyanonymous/comfy_examples/blob/master/flux/flux_dev_example.png" -P /comfy
-
 # Install Xlabs-AI/flux-RealismLora
-RUN apt-get install -y libgl1-mesa-glx libglib2.0-0
-RUN cd /comfy/custom_nodes && \
+RUN apt-get install -y libgl1 libglx-mesa0 libglib2.0-0
+RUN cd /opt/comfy/custom_nodes && \
     git clone https://github.com/XLabs-AI/x-flux-comfyui.git && \
     cd x-flux-comfyui && \
     python setup.py
 
 # This is a hacky way to change the default workflow on startup, but it works
-COPY --chmod=644 defaultGraph.json /defaultGraph.json
-COPY --chmod=755 replaceDefaultGraph.py /replaceDefaultGraph.py
+COPY --chmod=644 defaultGraph.json /opt/comfy/defaultGraph.json
+COPY --chmod=755 replaceDefaultGraph.py /opt/comfy/replaceDefaultGraph.py
 # Run the Python script
-RUN python /replaceDefaultGraph.py
+RUN python /opt/comfy/replaceDefaultGraph.py
 
 # Add some additional custom nodes
 # LDSR Upscale
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/flowtyone/comfy-Flowty-LDSR.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/flowtyone/ComfyUI-Flowty-LDSR.git && \
     cd ComfyUI-Flowty-LDSR && \
     pip install -r requirements.txt
 
@@ -135,15 +134,15 @@ RUN comfy node registry-install comfyui-kjnodes
 RUN comfy node registry-install rgthree-comfy
 
 # JPS-Nodes
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/JPS-GER/comfy_JPS-Nodes.git
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/JPS-GER/ComfyUI_JPS-Nodes.git
 
 # Comfyrol Studio
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/Suzie1/comfy_Comfyroll_CustomNodes.git
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git
 
 # comfy-plasma
-RUN cd /comfy/custom_nodes && \
+RUN cd /opt/comfy/custom_nodes && \
     git clone https://github.com/Jordach/comfy-plasma.git
 
 # ComfyUI-VideoHelperSuite (https://registry.comfy.org/nodes/comfy-videohelpersuite)
@@ -157,72 +156,67 @@ RUN comfy node registry-install comfyui-impact-subpack
 
 # ComfyUI-Impact-controlnet_aux
 RUN comfy node registry-install comfyui-controlnet-aux
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/Fannovel16/comfy_controlnet_aux.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
     cd comfyui_controlnet_aux && \
     pip install -r requirements.txt
+
 # ComfyUI-UltimateSDUpscale (https://registry.comfy.org/nodes/comfy-ultimatesdupscale)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/ssitu/comfy_UltimateSDUpscale --recursive
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale --recursive
 
 # ComfyUI-Easy-Use (https://registry.comfy.org/nodes/comfy-easy-use)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/yolain/comfy-Easy-Use.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/yolain/ComfyUI-Easy-Use.git && \
     cd ComfyUI-Easy-Use && \
     pip install -r requirements.txt
 
 # ComfyUI-Florence2 (https://registry.comfy.org/nodes/comfy-florence2)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/kijai/comfy-Florence2.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/kijai/ComfyUI-Florence2.git && \
     cd ComfyUI-Florence2 && \
     pip install -r requirements.txt && \
-    mkdir /comfy/models/LLM
+    mkdir /opt/comfy/models/LLM
 
 # was-node-suite-comfyui (https://registry.comfy.org/nodes/was-node-suite-comfyui)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/WASasquatch/was-node-suite-comfyui.git && \
-    cd was-node-suite-comfyui && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/WASasquatch/WAS-node-suite-comfyui.git && \
+    cd WAS-node-suite-comfyui && \
     pip install -r requirements.txt
 
 # ComfyUI-Logic (https://registry.comfy.org/nodes/comfy-logic)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/theUpsider/comfy-Logic.git
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/theUpsider/ComfyUI-Logic.git
 
 # ComfyUI_essentials (https://registry.comfy.org/nodes/comfy-essentials)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/cubiq/comfy_essentials.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/cubiq/ComfyUI_essentials.git && \
     cd ComfyUI_essentials && \
     pip install -r requirements.txt
 
 # cg-image-picker (https://registry.comfy.org/nodes/cg-image-picker)
-RUN cd /comfy/custom_nodes && \
+RUN cd /opt/comfy/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-image-picker.git
 
 # ComfyUI_LayerStyle (https://registry.comfy.org/nodes/comfy-layerstyle)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/chflame163/comfy_LayerStyle.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/chflame163/ComfyUI_LayerStyle.git && \
     cd ComfyUI_LayerStyle && \
     pip install -r requirements.txt
 
 # comfyui-mixlab-nodes (https://registry.comfy.org/nodes/comfy-mixlab-nodes)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/shadowcz007/comfy-mixlab-nodes.git && \
-    cd comfyui-mixlab-nodes && \
-    pip install -r requirements.txt
-
-# comfyui-reactor-node (https://registry.comfy.org/nodes/comfy-reactor-node)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/Gourieff/comfy-reactor-node.git && \
-    cd comfyui-reactor-node && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/shadowcz007/ComfyUI-mixlab-nodes.git && \
+    cd ComfyUI-mixlab-nodes && \
     pip install -r requirements.txt
 
 # cg-use-everywhere (https://registry.comfy.org/nodes/cg-use-everywhere)
-RUN cd /comfy/custom_nodes && \
+RUN cd /opt/comfy/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-use-everywhere.git
 
 # ComfyUI-CogVideoXWrapper (https://registry.comfy.org/nodes/comfy-cogvideoxwrapper)
-RUN cd /comfy/custom_nodes && \
-    git clone https://github.com/kijai/comfy-CogVideoXWrapper.git && \
+RUN cd /opt/comfy/custom_nodes && \
+    git clone https://github.com/kijai/ComfyUI-CogVideoXWrapper.git && \
     cd ComfyUI-CogVideoXWrapper && \
     pip install -r requirements.txt
 
