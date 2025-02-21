@@ -1,6 +1,6 @@
-ARG CUDA_VERSION="12.1.1"
-ARG CUDNN_VERSION="8"
-ARG UBUNTU_VERSION="22.04"
+ARG CUDA_VERSION="12.6.3"
+ARG CUDNN_VERSION=""
+ARG UBUNTU_VERSION="24.04"
 ARG DOCKER_FROM=nvidia/cuda:$CUDA_VERSION-cudnn$CUDNN_VERSION-devel-ubuntu$UBUNTU_VERSION
 
 # Base NVidia CUDA Ubuntu image
@@ -8,11 +8,34 @@ FROM $DOCKER_FROM AS base
 
 # Install Python plus openssh, which is our minimum set of required packages.
 RUN apt-get update -y && \
-    apt-get install -y python3 python3-pip python3-venv && \
-    apt-get install -y --no-install-recommends openssh-server openssh-client git git-lfs wget vim zip unzip curl && \
-    python3 -m pip install --upgrade pip && \
+    apt-get install -y wget bzip2 && \
+    apt-get install -y --no-install-recommends openssh-server openssh-client git git-lfs unzip curl && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"; \
+    else \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh"; \
+    fi && \
+    wget $MINICONDA_URL -O miniconda.sh && \
+    bash miniconda.sh -b -p /usr/local/miniconda3 && \
+    rm miniconda.sh
+
+ENV PATH="/usr/local/miniconda3/bin:/usr/local/cuda/bin:${PATH}"
+ENV CONDA_PKGS_DIRS="/opt/conda/pkgs"
+
+# Configure conda to use the cache directory
+RUN mkdir -p /opt/conda/pkgs && \
+    conda config --add pkgs_dirs /opt/conda/pkgs && \
+    conda config --set use_index_cache True && \
+    conda config --set channel_priority strict
+
+# Create and activate conda environment
+RUN conda create -n comfyui python=3.12 pip -y && \
+    echo "conda activate comfyui" >> ~/.bashrc
+
+SHELL ["/bin/bash", "--login", "-c"]
 
 # Install nginx
 RUN apt-get update && \
@@ -21,28 +44,24 @@ RUN apt-get update && \
 # Copy the 'default' configuration file to the appropriate location
 COPY default /etc/nginx/sites-available/default
 
-ENV PATH="/usr/local/cuda/bin:${PATH}"
-
 # Install pytorch
-ARG PYTORCH="2.4.0"
-ARG CUDA="121"
-RUN pip3 install --no-cache-dir -U torch==$PYTORCH torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu$CUDA
+ARG PYTORCH="2.6.0"
+ARG CUDA="126"
+RUN conda install -n comfyui -y pytorch=$PYTORCH torchvision torchaudio pytorch-cuda=$CUDA -c pytorch -c nvidia
 
 COPY --chmod=755 start-ssh-only.sh /start.sh
 COPY --chmod=755 start-original.sh /start-original.sh
 COPY --chmod=755 comfyui-on-workspace.sh /comfyui-on-workspace.sh
-COPY --chmod=755 ai-toolkit-on-workspace.sh /ai-toolkit-on-workspace.sh
 COPY --chmod=755 check_files.sh /check_files.sh
 
 # Clone the git repo and install requirements in the same RUN command to ensure they are in the same layer
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
-    cd ComfyUI && \
-    pip3 install -r requirements.txt && \
-    cd custom_nodes && \
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
-    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git && \
-    cd /ComfyUI && \
-    mkdir pysssss-workflows
+RUN conda run -n comfyui pip install comfy-cli
+
+# ComfyUI-Custom-Scripts
+RUN conda run -n comfyui comfy node registry-install comfyui-custom-scripts
+
+# Create pysssss-workflows folder
+RUN mkdir pysssss-workflows
 
 COPY --chmod=644 workflows/ /ComfyUI/pysssss-workflows/
 COPY --chmod=644 comfy.settings.json /ComfyUI/user/default/comfy.settings.json
@@ -51,7 +70,6 @@ COPY --chmod=644 example_photo.png /ComfyUI/input/example_photo.png
 COPY --chmod=644 example_photo_small.png /ComfyUI/input/example_photo_small.png
 COPY --chmod=644 example_pose.png /ComfyUI/input/example_pose.png
 COPY --chmod=644 example2.png /ComfyUI/input/example2.png
-COPY --chmod=644 driving_video.mp4 /ComfyUI/input/driving_video.mp4
 
 WORKDIR /workspace
 
@@ -65,24 +83,20 @@ RUN apt-get install -y libgl1-mesa-glx libglib2.0-0
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/XLabs-AI/x-flux-comfyui.git && \
     cd x-flux-comfyui && \
-    python3 setup.py
+    python setup.py
 
 # This is a hacky way to change the default workflow on startup, but it works
 COPY --chmod=644 defaultGraph.json /defaultGraph.json
 COPY --chmod=755 replaceDefaultGraph.py /replaceDefaultGraph.py
 # Run the Python script
-RUN python3 /replaceDefaultGraph.py
-
-# Add Jupyter Notebook
-RUN pip3 install jupyterlab
-EXPOSE 8888
+RUN conda run -n comfyui python /replaceDefaultGraph.py
 
 # Add some additional custom nodes
 # LDSR Upscale
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/flowtyone/ComfyUI-Flowty-LDSR.git && \
     cd ComfyUI-Flowty-LDSR && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
 # Add download scripts for additional models
 COPY --chmod=755 download_Controlnet.sh /download_Controlnet.sh
@@ -95,27 +109,18 @@ COPY --chmod=755 download_Outpainting.sh /download_Outpainting.sh
 COPY --chmod=755 download_Workflows.sh /download_Workflows.sh
 COPY --chmod=755 update_Workflows.sh /update_Workflows.sh
 COPY --chmod=755 download_ALL.sh /download_ALL.sh
-COPY --chmod=755 make_venv.sh /make_venv.sh
+COPY --chmod=755 make_conda_env.sh /make_conda_env.sh
 COPY --chmod=755 download_Files.sh /download_Files.sh
 COPY --chmod=755 disable_mixlab.sh /disable_mixlab.sh
 
-# SUPIR Upscale
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/kijai/ComfyUI-SUPIR.git && \
-    cd ComfyUI-SUPIR && \
-    pip3 install -r requirements.txt
+# SUPIR Upscale (https://registry.comfy.org/nodes/comfyui-supir)
+RUN conda run -n comfyui comfy node registry-install comfyui-supir
 
-# KJNodes
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/kijai/ComfyUI-KJNodes.git && \
-    cd ComfyUI-KJNodes && \
-    pip3 install -r requirements.txt
+# KJNodes (https://registry.comfy.org/nodes/comfyui-kjnodes)
+RUN conda run -n comfyui comfy node registry-install comfyui-kjnodes
 
-# rgthree
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/rgthree/rgthree-comfy.git && \
-    cd rgthree-comfy && \
-    pip3 install -r requirements.txt
+# rgthree (https://registry.comfy.org/nodes/rgthree-comfy)
+RUN conda run -n comfyui comfy node registry-install rgthree-comfy
 
 # JPS-Nodes
 RUN cd /ComfyUI/custom_nodes && \
@@ -129,106 +134,87 @@ RUN cd /ComfyUI/custom_nodes && \
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Jordach/comfy-plasma.git
 
-# ComfyUI-VideoHelperSuite
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git && \
-    cd ComfyUI-VideoHelperSuite && \
-    pip3 install -r requirements.txt
+# ComfyUI-VideoHelperSuite (https://registry.comfy.org/nodes/comfyui-videohelpersuite)
+RUN conda run -n comfyui comfy node registry-install comfyui-videohelpersuite
 
-# ComfyUI-AdvancedLivePortrait
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait.git && \
-    cd ComfyUI-AdvancedLivePortrait && \
-    pip3 install -r requirements.txt
+# ComfyUI-AdvancedLivePortrait (https://registry.comfy.org/nodes/comfyui-advancedliveportrait)
+RUN conda run -n comfyui comfy node registry-install comfyui-advancedliveportrait
 
-# ComfyUI-Impact-Subpack
-RUN cd /ComfyUI/custom_nodes && \
-    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
-    cd ComfyUI-Impact-Pack && \
-    pip3 install -r requirements.txt && \
-    python3 install.py
+# ComfyUI-Impact-Subpack (https://registry.comfy.org/nodes/comfyui-impact-subpack)
+RUN conda run -n comfyui comfy node registry-install comfyui-impact-subpack
 
 # ComfyUI-Impact-controlnet_aux
+RUN conda run -n comfyui comfy node registry-install comfyui-controlnet-aux
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
     cd comfyui_controlnet_aux && \
-    pip3 install -r requirements.txt
-
-# ComfyUI-UltimateSDUpscale
+    conda run -n comfyui pip install -r requirements.txt
+# ComfyUI-UltimateSDUpscale (https://registry.comfy.org/nodes/comfyui-ultimatesdupscale)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale --recursive
 
-# ComfyUI-Easy-Use
+# ComfyUI-Easy-Use (https://registry.comfy.org/nodes/comfyui-easy-use)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/yolain/ComfyUI-Easy-Use.git && \
     cd ComfyUI-Easy-Use && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# ComfyUI-Florence2
+# ComfyUI-Florence2 (https://registry.comfy.org/nodes/comfyui-florence2)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/kijai/ComfyUI-Florence2.git && \
     cd ComfyUI-Florence2 && \
-    pip3 install -r requirements.txt && \
+    conda run -n comfyui pip install -r requirements.txt && \
     mkdir /ComfyUI/models/LLM
 
-# was-node-suite-comfyui
+# was-node-suite-comfyui (https://registry.comfy.org/nodes/was-node-suite-comfyui)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/WASasquatch/was-node-suite-comfyui.git && \
     cd was-node-suite-comfyui && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# ComfyUI-Logic
+# ComfyUI-Logic (https://registry.comfy.org/nodes/comfyui-logic)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/theUpsider/ComfyUI-Logic.git
 
-# ComfyUI_essentials
+# ComfyUI_essentials (https://registry.comfy.org/nodes/comfyui-essentials)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/cubiq/ComfyUI_essentials.git && \
     cd ComfyUI_essentials && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# cg-image-picker
+# cg-image-picker (https://registry.comfy.org/nodes/cg-image-picker)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-image-picker.git
 
-# ComfyUI_LayerStyle
+# ComfyUI_LayerStyle (https://registry.comfy.org/nodes/comfyui-layerstyle)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/chflame163/ComfyUI_LayerStyle.git && \
     cd ComfyUI_LayerStyle && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# Ccomfyui-mixlab-nodes
+# comfyui-mixlab-nodes (https://registry.comfy.org/nodes/comfyui-mixlab-nodes)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/shadowcz007/comfyui-mixlab-nodes.git && \
     cd comfyui-mixlab-nodes && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# comfyui-reactor-node
+# comfyui-reactor-node (https://registry.comfy.org/nodes/comfyui-reactor-node)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/Gourieff/comfyui-reactor-node.git && \
     cd comfyui-reactor-node && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# cg-use-everywhere
+# cg-use-everywhere (https://registry.comfy.org/nodes/cg-use-everywhere)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-use-everywhere.git
 
-# ComfyUI-CogVideoXWrapper
+# ComfyUI-CogVideoXWrapper (https://registry.comfy.org/nodes/comfyui-cogvideoxwrapper)
 RUN cd /ComfyUI/custom_nodes && \
     git clone https://github.com/kijai/ComfyUI-CogVideoXWrapper.git && \
     cd ComfyUI-CogVideoXWrapper && \
-    pip3 install -r requirements.txt
+    conda run -n comfyui pip install -r requirements.txt
 
-# AI-Toolkit
-RUN cd / && \
-    git clone https://github.com/ostris/ai-toolkit.git && \
-    cd ai-toolkit && \
-    git submodule update --init --recursive && \
-    pip3 install -r requirements.txt
-
-# copy default train_lora.yaml file
-COPY --chmod=644 ai-toolkit/train_lora.yaml /ai-toolkit/config/train_lora.yaml
-COPY --chmod=755 ai-toolkit/caption_images.py /caption_images.py
-EXPOSE 7860
+# ComfyUI-FluxTrainer (https://registry.comfy.org/nodes/comfyui-fluxtrainer)
+RUN conda run -n comfyui comfy node registry-install comfyui-fluxtrainer
 
 CMD [ "/start.sh" ]

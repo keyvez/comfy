@@ -16,9 +16,6 @@ fi
 # Move text-generation-webui's folder to $VOLUME so models and all config will persist
 /comfyui-on-workspace.sh
 
-# Move ai-toolkit's folder to $VOLUME so models and all config will persist
-/ai-toolkit-on-workspace.sh
-
 #!/bin/bash
 if [[ -z "${HF_TOKEN}" ]] || [[ "${HF_TOKEN}" == "enter_your_huggingface_token_here" ]]
 then
@@ -32,18 +29,12 @@ fi
 # Start nginx as reverse proxy to enable api access
 service nginx start
 
-# Start JupyterLab
-jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.allow_origin='*' &
-echo "JupyterLab started"
-
 # Check if the flux model is present
 bash /check_files.sh
 
-# Check if there is a venv directory, if so, activate it
-if [ -d "/workspace/venv" ]; then
-    echo "venv directory found, activating it"
-    source /workspace/venv/bin/activate
-fi
+# Activate conda environment
+source /usr/local/miniconda3/etc/profile.d/conda.sh
+conda activate ComfyUI_env
 
 # Check if user's script exists in /workspace
 if [ ! -f /workspace/start_user.sh ]; then

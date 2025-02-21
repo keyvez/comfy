@@ -4,7 +4,7 @@
 
 - **Added AI-Toolkit to train LoRas**
     - You can now train your own LoRas with the AI-Toolkit directly in this template and try them at the same time.
-    - Here is a tutorial on how to train your own LoRa: [AI-Toolkit Tutorial](https://github.com/ValyrianTech/ComfyUI_with_Flux/blob/main/comfyui-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)
+    - Here is a tutorial on how to train your own LoRa: [AI-Toolkit Tutorial](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/comfyui-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)
 
 - **Included workflows:**
     - AdvanceLivePortrait
@@ -33,7 +33,7 @@
     - There is now a secondary template that is identical to this template, but it does not include the 20GB+ flux model, so it would be faster to deploy. You can find it here: [ComfyUI without Flux.1 dev one-click](https://runpod.io/console/deploy?template=aomdggbx0y&ref=2vdt3dn9)
     - If you use a network volume, all the files are copied to the network volume on the first run, so the next time you deploy a pod, you can change the template to the `ComfyUI without Flux.1 dev one-click` template.
 
-- **Fixed some issues with JupyterLab**
+- **Fixed some issues**
 
 - **Pre-installed a bunch of popular custom nodes**
 
@@ -43,8 +43,8 @@
     ComfyUI-SUPIR, was-node-suite-comfyui, comfyui_controlnet_aux, ComfyUI-Easy-Use, comfyui-reactor-node, ComfyUI_LayerStyle, comfyui-mixlab-nodes
 
     - This should make the problems with 'IMPORT FAILED' less frequent. If you still encounter this problem when restarting a pod, you can go to the manager and click on 'Custom Nodes Manager', find the one that is causing the problem and click on the 'Try fix' button. 
-    - If you have a lot of custom nodes that are causing problems, there is another possible solution, but should only be use as a 'last resort', you can make a persistent venv by running the command `bash /make_venv.sh` in the terminal.
-    - This will create a persistent venv on the workspace and install all the dependencies that are needed. However, this will take a long time and will require at least another 15GB of space on the network volume.
+    - If you have a lot of custom nodes that are causing problems, there is another possible solution, but should only be used as a 'last resort', you can make a persistent conda environment by running the command `bash /make_conda_env.sh` in the terminal.
+    - This will create a persistent conda environment on the system and install all the dependencies that are needed. However, this will take a long time and will require additional space (15GB+) for the environment and its dependencies.
 
 
 
@@ -52,10 +52,9 @@
 - Updated ComfyUI to latest version
 - Added Realism LoRa from XLabs-AI and VideoAditor
 - Custom LoRa for Valyrian Tech's virtual spokesperson (Trigger word: "GracePenelopeTargaryen")
-- Added JupyterLab for easy uploading of files
 
 ## Video
-[![demo video](https://github.com/ValyrianTech/ComfyUI_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
+[![demo video](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
 
 # Runpod.io template
 [Link to template on Runpod.io](https://runpod.io/console/deploy?template=rzg5z3pls5&ref=2vdt3dn9)
@@ -88,28 +87,13 @@ Optionally, you can also specify a new prompt for the workflow:
 python api_example.py --ip 194.68.245.38 --port 22018 --filepath workflow_api_format.json --prompt "platinum blonde woman with magenta eyes"
 ```
 
-[api_example.py](https://github.com/ValyrianTech/ComfyUI_with_Flux/blob/main/examples/api_example.py)
+[api_example.py](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/examples/api_example.py)
 
 You can find your IP address and port in the 'TCP Port Mappings' section when you click the 'Connect' button on the Runpod.io.
 You will need the Public IP and the External Port.
-![TCP Port Mappings](https://github.com/ValyrianTech/ComfyUI_with_Flux/blob/main/tcp_port_mappings.png?raw=true)
+![TCP Port Mappings](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/tcp_port_mappings.png?raw=true)
 
 If you want to use a different workflow, keep in mind you must use the API format of the workflow, you can get this by clicking the 'Save (API Format)' button in the ComfyUI.
-
-## JupyterLab
-You can use JupyterLab to upload files to your pod, like custom LoRa models or other files.
-
-Click on the "Connect to HTTP Service [Port 8888]" button to open JupyterLab.
-You will be asked for a token, this will be different each time you deploy a new pod.
-
-The token can be seen in the logs of the runpod template:
-
-![JupyterLab token](https://github.com/ValyrianTech/ComfyUI_with_Flux/blob/main/JupyterLab_token.png?raw=true)
-
-Alternatively, you can start the web terminal and connect to it and enter the command "jupyter server list" to get the token.
-
-Note: Due to a technical peculiarity in JupyterLab, the folder /ComfyUI/models/checkpoints will not open, because 'checkpoints' is a special word in JupyterLab.
-If you need to copy a file in this folder, you can still connect via the web terminal and use the 'wget' command to download your file.
 
 ## Note
 Patience is a virtue! This template includes all the files needed to run ComfyUI with Flux.1-dev, so it is a big file. The deployment process should take about 15 minutes to complete. 
