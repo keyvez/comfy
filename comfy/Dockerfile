@@ -54,13 +54,17 @@ COPY --chmod=755 start-original.sh /start-original.sh
 COPY --chmod=755 comfyui-on-workspace.sh /comfyui-on-workspace.sh
 COPY --chmod=755 check_files.sh /check_files.sh
 
-# Install ComfyUI dependencies
+# Install ComfyCLI dependencies
 RUN pip install --no-cache-dir comfy-cli
+
+# Install ComfyUI
+RUN comfy --workspace=/workspace/comfy install
 
 # ComfyUI-Custom-Scripts
 RUN comfy node registry-install comfyui-custom-scripts
 
 # Create pysssss-workflows folder
+RUN mkdir pysssss-workflows
 RUN mkdir pysssss-workflows
 
 COPY --chmod=644 workflows/ /ComfyUI/pysssss-workflows/
