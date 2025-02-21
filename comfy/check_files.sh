@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILE="/workspace/ComfyUI/models/diffusion_models/flux1-dev.sft"
+FILE="/workspace/comfy/models/diffusion_models/flux1-dev.sft"
 
 if [ ! -f "$FILE" ]; then
     echo "#################################################################"

@@ -14,7 +14,7 @@ then
 fi
 
 # Move text-generation-webui's folder to $VOLUME so models and all config will persist
-/comfyui-on-workspace.sh
+/comfy-on-workspace.sh
 
 #!/bin/bash
 if [[ -z "${HF_TOKEN}" ]] || [[ "${HF_TOKEN}" == "enter_your_huggingface_token_here" ]]

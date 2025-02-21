@@ -1,11 +1,11 @@
 # ComfyUI with Flux.1-dev
 
-This is a shortened version of the README, read the full version here: [ComfyUI with Flux.1-dev README](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/README.md)
+This is a shortened version of the README, read the full version here: [ComfyUI with Flux.1-dev README](https://github.com/keyvez/comfy_with_Flux/blob/main/README.md)
 
 
 ## Update 2024-10-11
 
-- **Added AI-Toolkit to train LoRas:  [AI-Toolkit Tutorial](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/comfyui-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)**
+- **Added AI-Toolkit to train LoRas:  [AI-Toolkit Tutorial](https://github.com/keyvez/comfy_with_Flux/blob/main/comfy-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)**
 - **New workflows**
 - **Improved support for network volumes and customization**
 - **New secondary template without the 20GB+ flux model for faster deploy**
@@ -20,7 +20,7 @@ This is a shortened version of the README, read the full version here: [ComfyUI 
 - Custom LoRa for Valyrian Tech's virtual spokesperson (Trigger word: "GracePenelopeTargaryen")
 
 ## Video
-[![demo video](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
+[![demo video](https://github.com/keyvez/comfy_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
 
 
 ## Overview
@@ -36,7 +36,7 @@ Welcome to the one-click deployment template of ComfyUI with Flux.1-dev. This te
 Ready to dive in? Simply click on the 'Deploy' button. This will automatically set up ComfyUI with Flux.1-dev on your Runpod.io account, along with the default workflows, ComfyUI Manager, and Custom-Scripts.
 
 ## API
-See full README for more info on how to use the API: [ComfyUI with Flux.1-dev README](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/README.md)
+See full README for more info on how to use the API: [ComfyUI with Flux.1-dev README](https://github.com/keyvez/comfy_with_Flux/blob/main/README.md)
 
 ## Note
 Patience is a virtue! This template includes all the files needed to run ComfyUI with Flux.1-dev, so it is a big file. The deployment process should take about 15 minutes to complete. 

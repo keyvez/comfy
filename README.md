@@ -4,7 +4,7 @@
 
 - **Added AI-Toolkit to train LoRas**
     - You can now train your own LoRas with the AI-Toolkit directly in this template and try them at the same time.
-    - Here is a tutorial on how to train your own LoRa: [AI-Toolkit Tutorial](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/comfyui-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)
+    - Here is a tutorial on how to train your own LoRa: [AI-Toolkit Tutorial](https://github.com/keyvez/comfy_with_Flux/blob/main/comfy-without-flux/ai-toolkit/Tutorial_how_to_train_a_LoRa.md)
 
 - **Included workflows:**
     - AdvanceLivePortrait
@@ -54,7 +54,7 @@
 - Custom LoRa for Valyrian Tech's virtual spokesperson (Trigger word: "GracePenelopeTargaryen")
 
 ## Video
-[![demo video](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
+[![demo video](https://github.com/keyvez/comfy_with_Flux/blob/main/video_screenshot.png?raw=true)](https://youtu.be/WojIAFte-5E)
 
 # Runpod.io template
 [Link to template on Runpod.io](https://runpod.io/console/deploy?template=rzg5z3pls5&ref=2vdt3dn9)
@@ -87,11 +87,11 @@ Optionally, you can also specify a new prompt for the workflow:
 python api_example.py --ip 194.68.245.38 --port 22018 --filepath workflow_api_format.json --prompt "platinum blonde woman with magenta eyes"
 ```
 
-[api_example.py](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/examples/api_example.py)
+[api_example.py](https://github.com/keyvez/comfy_with_Flux/blob/main/examples/api_example.py)
 
 You can find your IP address and port in the 'TCP Port Mappings' section when you click the 'Connect' button on the Runpod.io.
 You will need the Public IP and the External Port.
-![TCP Port Mappings](https://github.com/keyvez/ComfyUI_with_Flux/blob/main/tcp_port_mappings.png?raw=true)
+![TCP Port Mappings](https://github.com/keyvez/comfy_with_Flux/blob/main/tcp_port_mappings.png?raw=true)
 
 If you want to use a different workflow, keep in mind you must use the API format of the workflow, you can get this by clicking the 'Save (API Format)' button in the ComfyUI.
 

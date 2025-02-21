@@ -1,5 +1,5 @@
 #!/bin/bash
-dir="/workspace/ComfyUI/custom_nodes/comfyui-mixlab-nodes"
+dir="/workspace/comfy/custom_nodes/comfy-mixlab-nodes"
 
 if [ -d "$dir" ]
 then

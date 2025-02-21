@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # The URL of the github repo
-repo_url="https://raw.githubusercontent.com/keyvez/ComfyUI_with_Flux/main/comfy/workflows"
+repo_url="https://raw.githubusercontent.com/keyvez/comfy_with_Flux/main/comfy/workflows"
 
 # The local directory to store the files
-local_dir="/workspace/ComfyUI/pysssss-workflows"
+local_dir="/workspace/comfy/pysssss-workflows"
 
 # List of file names
 file_list=(

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Installing SUPIR"
-cd /ComfyUI/models/checkpoints
+cd /comfy/models/checkpoints
 
 echo "Downloading SUPIR-v0Q_fp16.safetensors"
 file="SUPIR-v0Q_fp16.safetensors"
@@ -16,7 +16,7 @@ fi
 
 
 echo "Downloading RealVisXL V5.0"
-cd /ComfyUI/models/checkpoints
+cd /comfy/models/checkpoints
 file="LightningBaked.safetensors"
 url="https://civitai.com/api/download/models/361593?type=Model&format=SafeTensor&size=pruned&fp=fp16"
 

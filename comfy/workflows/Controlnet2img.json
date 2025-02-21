@@ -215,7 +215,7 @@
         "Node name for S&R": "SaveImage"
       },
       "widgets_values": [
-        "ComfyUI"
+        "comfy"
       ]
     },
     {
@@ -945,7 +945,7 @@
         "Node name for S&R": "SaveImage"
       },
       "widgets_values": [
-        "ComfyUI"
+        "comfy"
       ]
     }
   ],

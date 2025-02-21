@@ -225,7 +225,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "If the swap model is missing: Open Manager and go to Custom Nodes Manager, search for 'ReActor Node for ComfyUI' and click the 'Try update' button. Restart ComfyUI and then refresh the browser, it should download the model automatically."
+        "If the swap model is missing: Open Manager and go to Custom Nodes Manager, search for 'ReActor Node for comfy' and click the 'Try update' button. Restart comfy and then refresh the browser, it should download the model automatically."
       ],
       "color": "#432",
       "bgcolor": "#653"
