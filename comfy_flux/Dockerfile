@@ -1,4 +1,4 @@
-FROM keyvez/comfy:latest
+FROM keyvez/comfy
 
 RUN pip install hf_transfer
 

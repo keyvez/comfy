@@ -532,7 +532,7 @@
         "Node name for S&R": "VAELoader"
       },
       "widgets_values": [
-        "ae.sft"
+        "ae.safetensors"
       ],
       "color": "#332922",
       "bgcolor": "#593930"
@@ -601,7 +601,7 @@
         "Node name for S&R": "UNETLoader"
       },
       "widgets_values": [
-        "flux1-dev.sft",
+        "flux1-dev.safetensors",
         "fp8_e4m3fn"
       ],
       "color": "#332922",

@@ -556,7 +556,7 @@
         "Node name for S&R": "UNETLoader"
       },
       "widgets_values": [
-        "flux1-dev.sft",
+        "flux1-dev.safetensors",
         "default"
       ],
       "color": "#223",
@@ -629,7 +629,7 @@
         "Node name for S&R": "VAELoader"
       },
       "widgets_values": [
-        "ae.sft"
+        "ae.safetensors"
       ]
     },
     {
